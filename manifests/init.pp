@@ -130,6 +130,7 @@ class firewalld (
   String                                                        $package                   = 'firewalld',
   Stdlib::Ensure::Service                                       $service_ensure            = 'running',
   String                                                        $config_package            = 'firewall-config',
+  Boolean                                                       $manage_package            = true,
   Boolean                                                       $install_gui               = false,
   Boolean                                                       $service_enable            = true,
   Hash                                                          $zones                     = {},
@@ -162,9 +163,11 @@ class firewalld (
   include firewalld::reload
   include firewalld::reload::complete
 
-  package { $package:
-    ensure => $package_ensure,
-    notify => Service['firewalld'],
+  if $manage_package {
+    package { $package:
+      ensure => $package_ensure,
+      notify => Service['firewalld'],
+    }
   }
 
   if $install_gui {
@@ -180,6 +183,7 @@ class firewalld (
   service { 'firewalld':
     ensure => $service_ensure,
     enable => $service_enable,
+    require => Package[$package]
   }
 
   # create ports
